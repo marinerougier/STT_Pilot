@@ -1,0 +1,392 @@
+<!-- TO DO -->
+<!-- Preload images -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>exp</title>
+  <script src="jspsych-6.0.3/jspsych.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-fullscreen.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-html-keyboard-response.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-html-button-response.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-survey-likert.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-survey-text.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-survey-multi-choice.js"></script>
+  <script src="js/jquery.min.js"></script>
+  <script src="js/lodash.min.js"></script>
+  <script src="js/firebase.js"></script>
+  <link href="jspsych-6.0.3/css/jspsych.css" rel="stylesheet" type="text/css">
+  <style>
+    body {
+      cursor: default;
+    }
+
+    .jspsych-content-wrapper {
+      width: 800px;
+      height: 650px;
+    }
+
+    .paringsImgsLeft,
+    .paringsImgsRight {
+      height: 320px;
+      margin: 0px;
+    }
+
+    .paringsImgsLeft {
+      margin-right: 10px;
+    }
+  </style>
+</head>
+
+<body></body>
+
+<script>
+  /* Parameters */
+  var delayIti = 100;  // 100; inter-trial-interval for trials
+  var delayTrial = 2000; // 2000; duration of each trial
+  var numOfUS = 1; // 12; number of US to be paired with each CS
+  var redirectToLink = "https://google.com"; // link to be redirected to at the end of the experiment
+  var FBdirectory = "EC" // Firebase directory in which to store the data
+
+  /* Initial variables */
+  var timeline = [];
+  var preloadimages = [];
+  var stims = [];
+  var id = jsPsych.data.getURLVariable("id");
+  id = id == null ? id : jsPsych.randomization.randomID(15); // assign random id if not provided in URL
+
+  /* Material */
+  // in R, use the following line code to list files in a directory:
+  // list.files("CS_Visages/", "*B_gp1") %>% paste0("'CS_Visages/", .,"',") %>% cat(sep = "\n")
+  var female_faces = [ // G1 = Blue   ; G2 = Yellow
+    'Faces/Google_1_Dawn Sampson_5_oval.jpg',
+    'Faces/Google_1_Douglas Cathcart_7_oval.jpg',
+    'Faces/Google_1_Theresa Oshea_5_oval.jpg',
+  ];
+  var male_faces = [ // G1 = Yellow ; G2 = Blue
+    'Faces/Google_1_Andrew Eckert_15_oval.jpg',
+    'Faces/Google_1_Craig Carroll_5_oval.jpg',
+    'Faces/Google_1_Fred Cornish_1_oval.jpg',
+  ];
+
+// 36 behavioral statements (24 trait-implying and 12 filler)
+// 36 faces with 18 female and 18 male 
+// --> 18 statements with gender = male and 18 with gender = female
+
+  // Sentences
+  // trait-implying sentences
+var trait_sentences_males = [
+    'Stim_sentences_males/Stim_sentences_males.001.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.002.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.003.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.004.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.005.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.006.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.007.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.008.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.009.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.010.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.011.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.012.jpeg',
+]
+
+var trait_sentences_females = [
+    'Stim_sentences_females/Stim_sentences_females.001.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.002.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.003.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.004.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.005.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.006.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.007.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.008.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.009.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.010.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.011.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.012.jpeg',
+]
+
+
+  preloadimages.push(female_faces, male_faces, trait_sentences_females, trait_sentences_males);
+
+  /* Functions */
+  // duplicate elements of an array n times
+  // see https://stackoverflow.com/questions/56330349/how-to-duplicate-elements-in-a-js-array-without-creating-dependent-elements?
+  function duplicateElements(elementsArray, times) {
+    var newArray = [];
+    for (let index = 0; index < elementsArray.length; index++) {
+      var currentElement = elementsArray[index];
+      var currentType = typeof currentElement
+      for (let index = 0; index < times; index++) {
+        if (currentType !== "object" && currentType) {
+          newArray.push(currentElement)
+        } else if (currentType === "object" && currentType) {
+          newArray.push({ ...currentElement })
+        }
+      }
+    }
+    return newArray;
+  }
+
+
+  /* RANDOMIZATION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+  /* PAIRING PROCEDURE */
+  // assign group color
+  var groupColor = _.sample(["G1B", "G1Y"]);
+  var CS = groupColor == "G1B" ? female_faces : male_faces;
+
+  // generate US-CS parings
+  CS.map(function (e) { stims.push({ CS: e }) });
+  stims = duplicateElements(stims, numOfUS);
+
+  // randomly assign pos or neg US to each CS
+  var US = [];
+  var USgender = _.shuffle(["male", "female"]);
+  var USCSpairing = groupColor + USgender[0];
+  USgender = duplicateElements(USgender, CS.length / 2);
+  USgender.map(function (e) {
+    if (e == "male") US.push(_.sampleSize(trait_sentences_males, numOfUS));
+    if (e == "female") US.push(_.sampleSize(trait_sentences_females, numOfUS));
+  });
+  US = _.flattenDeep(US);
+  stims.map(function (e, i) { e.US = US[i] });
+
+  // randomized US-CS horizontal position
+  stims.map(function (e) { e.CSposition = _.sample(["left", "right"]) });
+
+
+  /* Pairings */
+  var evacond = {
+    timeline_variables: stims,
+    randomize_order: true,
+    choices: jsPsych.NO_KEYS,
+    trial_duration: delayTrial,
+    post_trial_gap: delayIti,
+    on_load: function () {
+      $('body').css({ "cursor": "none" });
+      $('.jspsych-content').css({ "max-width": "100%" });
+    },
+    timeline: [{
+      type: 'html-keyboard-response',
+      stimulus: function () {
+        if (jsPsych.timelineVariable('CSposition', true) == "left") {
+          var leftImg = jsPsych.timelineVariable('CS', true);
+          var rightImg = jsPsych.timelineVariable('US', true);
+        } else {
+          var leftImg = jsPsych.timelineVariable('US', true);
+          var rightImg = jsPsych.timelineVariable('CS', true);
+        };
+        html = '';
+        html += "<img class='paringsImgsLeft' src='" + leftImg + "'>";
+        html += "<img class='paringsImgsRight' src='" + rightImg + "'>";
+        return html;
+      },
+      on_finish: function (data) {
+        $('.jspsych-content').css({ "max-width": "90%" });
+        data.task = "evaCond";
+        data.CS = jsPsych.timelineVariable('CS', true);
+        data.US = jsPsych.timelineVariable('US', true);
+        data.CSposition = jsPsych.timelineVariable('CSposition', true);
+      },
+    }]
+  };
+
+  /* EXPERIMENT ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+  /* Fullscreen mode & Consent */
+  var activeFullscreen = {
+    message: function () {
+      html = "";
+      html += "<h1>Informed Consent</h1>";
+      html += "<p class='justify'>In this study about perception, ";
+      html += "read some statements, write some text, complete a classification task and fill a survey. ";
+      html += "This should take you approximately <strong>18 minutes</strong>. During this period, ";
+      html += "it is important that you remain fully <strong>concentrated</strong>.</p>";
+      html += "<p class='justify'>Your participation is voluntary, does not imply any risks, your answers will be ";
+      html += "anonymous, and you are free to withdraw from the study at any moment. After full completion, ";
+      html += "you will receive a <strong>monetary compensation</strong> as stated in the Prolific ";
+      html += "description of this experiment.</p>";
+      html += "<p class='justify'>This study is administrated byMathias Schmitz, reasearcher at the UCLouvain (Belgium). ";
+      html += "If you have any question or comment please contact me at <strong>mathias.schmitz@uclouvain.be</strong></p>";
+      return html;
+    },
+    button_label: "I agree to take part in this study",
+    type: 'fullscreen',
+    fullscreen_mode: true,
+    delay_after: 200,
+  };
+
+  /* Present paired US-CS */
+  var pairingInst = {
+    type: "html-button-response",
+    post_trial_gap: 300,
+    choices: ['start'],
+    stimulus: function () {
+      var html = "";
+      html += "<h1>TASK 1</h1>";
+      html += "<p class = 'justify'>In the following task, ";
+      html += "you will be presented with a series of images. ";
+      html += "Your task is simply to <b>look carefully at these images</b>. ";
+      html += "The task will be automatically paced</p>";
+      return html;
+    }
+  };
+
+
+
+  /* CS RATINGS INSTRUCTIONS */
+  var instCSratings = {
+    type: "html-button-response",
+    post_trial_gap: 300,
+    choices: ['Start'],
+    on_load: function () { $('body').css({ "cursor": "default" }); },
+    stimulus: function () {
+      var html = "";
+      html += "<h1>Rating task</h1>";
+      html += "<p class='justify'>You will now be asked to indicate your <b>general feelings</b> about the faces you been presented with. ";
+      html += "To do so please use the following scale were <i>1 = very negatives feelings</i> to <i>9 = very positives feelings</i>.</br></br>";
+      html += "Please respond as honestly as possible. Your first impression is generally the most accurate.</p>";
+      return html;
+    },
+  };
+
+  /* CS RATINGS */
+  var ratingScale = ["1</br>Very negative", "2", "3", "4", "5", "6", "7", "8", "9</br>Very positive"];
+  var CSratings = [];
+  var shuffledCS = _.shuffle(CS);
+  shuffledCS.map(function (cs) {
+    var likert_trial = {
+      type: 'survey-likert',
+      preamble: "<img src='" + cs + "'>",
+      questions: [{ prompt: "What are your general feelings about this image?", labels: ratingScale, required: true }],
+      button_label: 'Continue',
+      on_load: function () {
+        $("#jspsych-survey-likert-form").css("width", "700px");
+        $(".jspsych-survey-likert-opts").css("margin-top", "30px");
+      },
+      on_finish: function (data) {
+        data.task = "CSratings";
+        data.CS = cs;
+        var parsed_response = JSON.parse(data.responses);
+        data.feeling = parsed_response.Q0 + 1;
+        console.log(data.CS);
+        console.log(data.feeling);
+      },
+    };
+    CSratings.push(likert_trial);
+  });
+
+
+  /* DEMO */
+  var age = {
+    timeline: [{
+      type: 'survey-text',
+      questions: [{ prompt: "What is your age :", rows: 1, columns: 10 }],
+      button_label: "continue",
+    }],
+    loop_function: function (data) {
+      var age = data.values()[0].responses;
+      var age = JSON.parse(age).Q0;
+      if (age == "") {
+        alert("Please indicate your age before continuing");
+        return true;
+      }
+    },
+    on_load: function () {
+      $(".jspsych-content").css("max-width", "90%");
+    },
+    on_finish: function (data) {
+      jsPsych.data.addProperties({
+        age: JSON.parse(data.responses)["Q0"],
+      });
+    },
+  };
+
+  var genderOptions = ['Male', 'Female', 'Other'];
+  var gender = {
+    type: 'survey-multi-choice',
+    questions: [{ prompt: "Please indicate your gender:", options: genderOptions, required: true }],
+    button_label: "continue",
+    on_finish: function (data) {
+      jsPsych.data.addProperties({
+        gender: JSON.parse(data.responses)["Q0"],
+      });
+    },
+  };
+
+
+  /* DEBRIEF */
+  var debrief = "";
+  debrief += "<h1>Fin de l'expérience</h1>";
+  debrief += "<p class='justify'>";
+  debrief += "Merci pour votre participation! Cette étude avait pour but d'étudier la perception générale ";
+  debrief += "qu'ont les individus de visages inconnus et ambigus.</br></br> "
+  debrief += "Veuillez copier le code suivant sur Foule Factory pour valider votre participation :</p>";
+  debrief += '<span style="color:#cc3300; font-weight: bold">PAZ1P9L4</span>';
+
+  /* TIMELINES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+  timeline.push(activeFullscreen);
+  timeline.push(pairingInst);
+  timeline.push(evacond);
+  timeline.push(instCSratings);
+  timeline.push(CSratings);
+  timeline.push(age);
+  timeline.push(gender);
+
+  preloadimages = _.flattenDeep(preloadimages);
+  timeline = _.flattenDeep(timeline);
+
+  /* INITIALISE EXP  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+  jsPsych.init({
+    timeline: timeline,
+    preload_images: preloadimages,
+    max_load_time: 300 * 1000,
+    exclusions: {
+      min_width: 800,
+      min_height: 650,
+    },
+    on_finish: function (data) {
+      $("#jspsych-content").html("<img src='img/loading.gif'>");
+
+      /* Initialize Firebase */
+      var config = {
+        apiKey: "AIzaSyD4r9uWI4icto61fm2tC9neKdEiOUWzMJ8",
+        databaseURL: "https://biatw-68fe6.firebaseio.com/"
+      };
+
+      firebase.initializeApp(config);
+      var database = firebase.database();
+
+      // if no id provided, generate a new id
+      if (id == null) { id = jsPsych.randomization.randomID(15) };
+
+      /* jsPsych: add data to every trial */
+      jsPsych.data.addProperties({
+        id: id,
+        groupColor: groupColor,
+        USCSpairing: USCSpairing,
+        totalTime: jsPsych.totalTime()
+      });
+
+      var dataEC = data.filter({ task: 'evaCond' }).csv();
+      var dataCSratings = data.filter({ task: 'CSratings' }).csv();
+
+      /* Send data to Firebase */
+      database
+        .ref(FBdirectory + "/" + id + "/")
+        .update({ dataEC })
+        .then(function () {
+          database
+            .ref(FBdirectory + "/" + id + "/")
+            .update({ dataCSratings })
+            .then(function () {
+              console.log("Data sent!");
+              $("#jspsych-content").html(debrief);
+              setTimeout(jsPsych.data.displayData, 5000);
+            });
+        });
+    }
+  });
+</script>
+
+</html>

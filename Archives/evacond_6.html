@@ -1,0 +1,678 @@
+<!-- TO DO -->
+<!-- Preload images -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>exp</title>
+  <script src="jspsych-6.0.3/jspsych.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-fullscreen.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-html-keyboard-response.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-html-button-response.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-survey-likert.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-survey-text.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-survey-multi-choice.js"></script>
+  <script src="js/jquery.min.js"></script>
+  <script src="js/lodash.min.js"></script>
+  <script src="js/firebase.js"></script>
+  <link href="jspsych-6.0.3/css/jspsych.css" rel="stylesheet" type="text/css">
+  <style>
+    body {
+      cursor: default;
+    }
+
+    .jspsych-content-wrapper {
+      width: 800px;
+      height: 650px;
+    }
+
+    .paringsImgsLeft,
+    .paringsImgsRight {
+      height: 320px;
+      margin: 0px;
+    }
+
+    .paringsImgsLeft {
+      margin-right: 10px;
+    }
+  </style>
+</head>
+
+<body></body>
+
+<script>
+  /* Parameters */
+  var delayIti = 100;  // 100; inter-trial-interval for trials
+  var delayTrial = 2000; // 2000; duration of each trial
+  var numOfUS = 1; // 12; number of US to be paired with each CS
+  var redirectToLink = "https://google.com"; // link to be redirected to at the end of the experiment
+  var FBdirectory = "EC" // Firebase directory in which to store the data
+
+  /* Initial variables */
+  var timeline = [];
+  var preloadimages = [];
+  var stims = [];
+  var id = jsPsych.data.getURLVariable("id");
+  id = id == null ? id : jsPsych.randomization.randomID(15); // assign random id if not provided in URL
+
+  /* Material */
+  var Faces = [
+    // male faces
+    'Faces/Jonathan_DArden_13_oval.jpg',
+    'Faces/Google_1_Todd Zambrano_3_oval.jpg',
+    'Faces/Google_1_Sean Shores_5_oval.jpg',
+    'Faces/Google_1_Luis Weber_17-oval.jpg',
+    'Faces/Google_1_Lawrence Holman_9_oval.jpg',
+    'Faces/Google_1_Kevin Northrup_9_oval.jpg',
+    'Faces/Google_1_June Nester_1_oval.jpg',
+    'Faces/Google_1_June Boehm_13_oval.jpg',
+    'Faces/Google_1_Joe Bristol_19_oval.jpg',
+    'Faces/Google_1_Jeanne Brian_1_oval.jpg',
+    'Faces/Google_1_Janice Eichhorn_3_oval.jpg',
+    'Faces/Google_1_Harry Bumgardner_1_oval.jpg',
+    'Faces/Google_1_Gertrude Hinojosa_15_oval.jpg',
+    'Faces/Google_1_Eric Strickland_9_oval.jpg',
+    'Faces/Google_1_Debra Manion_15_oval.jpg',
+    'Faces/Google_1_Debra Jankowski_17_oval.jpg',
+    'Faces/Google_1_Curtis Wegner_16_oval.jpg',
+    'Faces/Google_1_Charles Sampson_5_oval (2).jpg',
+    // female faces
+    'Faces/Google_1_April Seaton_5_oval.jpg',
+    'Faces/Google_1_Arthur Featherstone_1_oval.jpg',
+    'Faces/Google_1_Delores Creed_19_oval.jpg',
+    'Faces/Google_1_Eileen Hackworth_17_oval.jpg',
+    'Faces/Google_1_Ethel Mcardle_5_oval.jpg',
+    'Faces/Google_1_Felicia Rakes_7_oval.jpg',
+    'Faces/Google_1_Geneva Cline_11_oval.jpg',
+    'Faces/Google_1_Heidi Houghton_5_oval.jpg',
+    'Faces/Google_1_Jeffrey Churchwell_13_oval.jpg',
+    'Faces/Google_1_Laura Hines_7_oval.jpg',
+    'Faces/Google_1_Lynda Stamm_15_oval.jpg',
+    'Faces/Google_1_Roxanne Sales_13_oval.jpg',
+    'Faces/Google_1_Samuel Mansour_16_oval.jpg',
+    'Faces/Google_1_Susan Conant_5_oval.jpg',
+    'Faces/Google_1_Theresa Greenlee_7_oval.jpg',
+    'Faces/Google_1_Wendy Gates_3_oval.jpg',
+    'Faces/Juan_Edmiston_11_oval.jpg',
+    'Faces/wilma-1_oval.jpg',
+  ];
+
+  var Faces_gender = [
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+  ];
+
+// 36 behavioral statements (24 trait-implying and 12 filler)
+// 36 faces with 18 female and 18 male 
+// --> 18 statements with gender = male and 18 with gender = female
+
+  // Sentences
+  // trait-implying sentences
+var Trait_sentences_males = [
+    // trait-implying sentences
+    'Stim_sentences_males/Stim_sentences_males.001.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.002.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.003.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.004.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.005.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.006.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.007.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.008.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.009.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.010.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.011.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.012.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.013.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.014.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.015.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.016.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.017.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.018.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.019.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.020.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.021.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.022.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.023.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.024.jpeg',
+]
+
+var Filler_sentences_males = [
+    // filler sentences
+    'Stim_sentences_males/Stim_sentences_males.025.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.026.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.027.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.028.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.029.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.030.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.031.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.032.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.033.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.034.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.035.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.036.jpeg',
+]
+
+var Trait_sentences_females = [
+    // trait-implying sentences
+    'Stim_sentences_females/Stim_sentences_females.001.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.002.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.003.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.004.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.005.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.006.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.007.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.008.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.009.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.010.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.011.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.012.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.013.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.014.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.015.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.016.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.017.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.018.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.019.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.020.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.021.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.022.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.023.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.024.jpeg',
+]
+
+var Filler_sentences_females = [
+    // filler sentences
+    'Stim_sentences_females/Stim_sentences_females.025.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.026.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.027.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.028.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.029.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.030.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.031.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.032.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.033.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.034.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.035.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.036.jpeg',
+]
+
+var Traits_traits = [
+    // trait-implying sentences
+    "curious",
+    "cautious",
+    "lazy",
+    "emotional",
+    "insecure",
+    "nosy",
+    "funny",
+    "smart",
+    "selfish",
+    "modest",
+    "honest",
+    "fair",
+    "neat",
+    "creative",
+    "generous",
+    "clumsy",
+    "considerate",
+    "religious",
+    "impolite",
+    "shy",
+    "irresponsible",
+    "ambitious",
+    "calm",
+    "forgetful",
+]
+
+var Filler_traits = [
+    // Filler sentences
+    "competent",
+    "loved",
+    "competitive",
+    "offended",
+    "naive",
+    "proud",
+    "confident",
+    "passive",
+    "lost",
+    "inappropriate",
+    "disciplined",
+    "chaste",
+]
+
+
+var Trait_TypeSentence = [
+    // trait-implying sentences
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+]
+
+var Filler_TypeSentence = [
+    // filler sentences
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+]
+
+var RandomSameDiff = [
+    // trait-implying sentences
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "DiffTrait",
+    "DiffTrait",
+    "DiffTrait",
+    "DiffTrait",
+    "DiffTrait",
+    "DiffTrait",
+    "DiffTrait",
+    "DiffTrait",
+    "DiffTrait",
+    "DiffTrait",
+    "DiffTrait",
+    "DiffTrait",    
+]
+
+var Same = [
+    // trait-implying sentences
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",
+    "SameTrait",  
+]
+  RandomSameDiff = _.shuffle(RandomSameDiff); 
+  preloadimages.push(Faces, Trait_sentences_males, Trait_sentences_females);
+
+  /* Functions */
+  // duplicate elements of an array n times
+  // see https://stackoverflow.com/questions/56330349/how-to-duplicate-elements-in-a-js-array-without-creating-dependent-elements?
+  function duplicateElements(elementsArray, times) {
+    var newArray = [];
+    for (let index = 0; index < elementsArray.length; index++) {
+      var currentElement = elementsArray[index];
+      var currentType = typeof currentElement
+      for (let index = 0; index < times; index++) {
+        if (currentType !== "object" && currentType) {
+          newArray.push(currentElement)
+        } else if (currentType === "object" && currentType) {
+          newArray.push({ ...currentElement })
+        }
+      }
+    }
+    return newArray;
+  }
+
+
+  /* RANDOMIZATION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+  /* PAIRING PROCEDURE */
+ 
+ // putting all the information together in the "stim" object
+  Faces.map(function (e) { stims.push({ Faces: e }) });
+  stims = duplicateElements(stims, numOfUS);
+  stims.map(function (e, i) { e.Faces_gender = Faces_gender[i] });
+  stims = _.shuffle(stims); // randomize order 
+
+  Faces.map(function (e) { stims.push({ Faces: e }) });
+
+  stims.map(function (e, i) { e.Trait_sentences_males = Trait_sentences_males[i] });
+  stims.map(function (e, i) { e.Trait_sentences_females = Trait_sentences_females[i] });
+  //stims.map(function (e, i) { e.Traits = Traits[i] });
+  stims.map(function (e, i) { e.TypeSentence = TypeSentence[i] });
+  stims.map(function (e, i) { e.SameDiffTrait = e.TypeSentence == "Filler" ? "same" : _.shuffle(["diff", "same"])[0]});
+  stims.map(function (e, i) { e.Traits = e.SameDiffTrait == "same" ? Traits[i] : Traits[i+1]});
+  stims = _.shuffle(stims); // randomize order 
+
+  //stims.map(function (e, i) { e.Traits = Traits[i+1] });
+  //var CS = groupColor == "G1B" ? CS_G1B : CS_G1Y;
+
+  //stims.map(function (e, i) { e.SameDiffTrait = e.TypeSentence == "Filler" ? "same" : RandomSameDiff[i] });
+  
+  /*
+  var SameDiffTrait = [];
+  stims.map(function (e, i) { e.SameDiffTrait = SameDiffTrait[i] });
+  stims.map(function (e, i) {
+    if (e.TypeSentence == "Filler") e.SameDiffTrait == RandomSameDiff[i];
+    if (e.TypeSentence == "TraitImp") e.SameDiffTrait == Same[i];
+  });
+
+  //stims.map(function (e, i) { e.SameDiffTrait = e.TypeSentence == "TraitImp" ? RandomSameDiff[0,i] : "same"});
+  //stims.map(function (e, i) { e.SameDiffTrait = e.TypeSentence == "Filler" ? "same" : RandomSameDiff[0,i]});
+
+
+
+//stims.map(function (e) { e.SameDiffTrait  = TypeSentence == "TraitImp" ? _.shuffle(["diff", "same"]) : "Same" });
+//var SameDiffTrait = [];
+//stims.map(function (e) { e.SameDiffTrait  = e.TypeSentence == "TraitImp" ? e.randomSameDiff : e.Same });
+
+//stims.map(function (e) { e.SameDiffTrait  = TypeSentence == "TraitImp" ? _.shuffle(["same", "diff"]) : "same" });
+
+
+
+  var SameDiffTrait = TypeSentence == "TraitImp" ? _.shuffle(['same', 'diff']) : 'same';
+  var stims = stims + SameDiffTrait[0];
+  SameDiffTrait = duplicateElements(SameDiffTrait, Faces.length / 2);
+
+  TypeSentence.map(function (e) {
+    if (e == "Filler") US.push(_.sampleSize(USneg, numOfUS));
+    if (e == "TraitImp") US.push(_.sampleSize(USpos, numOfUS));
+  });
+*/
+//stims.map(function (e, i) { e.SameDiffTrait = SameDiffTrait[i] });
+
+
+  /* Pairings */
+  var evacond = {
+    timeline_variables: stims,
+    randomize_order: true,
+    choices: jsPsych.NO_KEYS,
+    trial_duration: delayTrial,
+    post_trial_gap: delayIti,
+    on_load: function () {
+      $('body').css({ "cursor": "none" });
+      $('.jspsych-content').css({ "max-width": "100%" });
+    },
+    timeline: [{
+      type: 'html-keyboard-response',
+      stimulus: function () {
+        if (jsPsych.timelineVariable('Faces_gender', true) == "male") {
+          var leftImg = jsPsych.timelineVariable('Faces', true);
+          var rightImg = jsPsych.timelineVariable('Trait_sentences_females', true);
+        } else {
+          var leftImg = jsPsych.timelineVariable('Faces', true);
+          var rightImg = jsPsych.timelineVariable('Trait_sentences_males', true);
+        };
+        html = '';
+        html += "<img class='paringsImgsLeft' src='" + leftImg + "'>";
+        html += "<img class='paringsImgsRight' src='" + rightImg + "'>";
+        return html;
+      },
+      on_finish: function (data) {
+        $('.jspsych-content').css({ "max-width": "90%" });
+        data.task = "evaCond";
+        data.Faces = jsPsych.timelineVariable('Faces', true);
+        data.SentFemale = jsPsych.timelineVariable('Trait_sentences_females', true);
+        data.SentMale = jsPsych.timelineVariable('Trait_sentences_males', true);
+        data.FacesGender = jsPsych.timelineVariable('Faces_gender', true);
+      },
+    }]
+  };
+
+
+  /* Recognition task */
+  var recogtask = {
+    timeline_variables: stims,
+    randomize_order: true,
+    //trial_duration: delayTrial,
+    post_trial_gap: delayIti,
+    on_load: function () {
+      $('body').css({ "cursor": "auto" });
+      $('.jspsych-content').css({ "max-width": "100%" });
+    },
+    timeline: [{
+      type: 'html-button-response',
+      choices: ['YES', 'NO'],
+      stimulus: function () {
+          if (jsPsych.timelineVariable('SameDiffTrait', true) == "same") {
+          var leftImg = jsPsych.timelineVariable('Faces', true);
+          var TraitDisplay = jsPsych.timelineVariable('Traits', true);
+        } else {
+          var leftImg = jsPsych.timelineVariable('Faces', true);   //here, the trait should be for half of faces the right one and for the other half a randomly picked trait that is not the correct one
+          var TraitDisplay = jsPsych.timelineVariable('Traits', true);
+        };
+        html = '';
+        html += "<img class='paringsImgsLeft' src='" + leftImg + "'><br>";
+        html += "" + TraitDisplay + "";
+        return html;
+      },
+      on_finish: function (data) {
+        $('.jspsych-content').css({ "max-width": "90%" });
+        data.task = "evaCond";
+        data.Faces = jsPsych.timelineVariable('Faces', true);
+        data.SentFemale = jsPsych.timelineVariable('Trait_sentences_females', true);
+        data.SentMale = jsPsych.timelineVariable('Trait_sentences_males', true);
+        data.FacesGender = jsPsych.timelineVariable('Faces_gender', true);
+        //RecogResp: JSON.parse(data.responses)["Q0"]; --> find a way to register the answer
+      },
+    }]
+  };
+
+
+  /* EXPERIMENT ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+  /* Fullscreen mode & Consent */
+  var activeFullscreen = {
+    message: function () {
+      html = "";
+      html += "<h1>Informed Consent</h1>";
+      html += "<p class='justify'>In this study about perception, ";
+      html += "read some statements, write some text, complete a classification task and fill a survey. ";
+      html += "This should take you approximately <strong>18 minutes</strong>. During this period, ";
+      html += "it is important that you remain fully <strong>concentrated</strong>.</p>";
+      html += "<p class='justify'>Your participation is voluntary, does not imply any risks, your answers will be ";
+      html += "anonymous, and you are free to withdraw from the study at any moment. After full completion, ";
+      html += "you will receive a <strong>monetary compensation</strong> as stated in the Prolific ";
+      html += "description of this experiment.</p>";
+      html += "<p class='justify'>This study is administrated byMathias Schmitz, reasearcher at the UCLouvain (Belgium). ";
+      html += "If you have any question or comment please contact me at <strong>mathias.schmitz@uclouvain.be</strong></p>";
+      return html;
+    },
+    button_label: "I agree to take part in this study",
+    type: 'fullscreen',
+    fullscreen_mode: true,
+    delay_after: 200,
+  };
+
+  /* Present paired US-CS */
+  var pairingInst = {
+    type: "html-button-response",
+    post_trial_gap: 300,
+    choices: ['start'],
+    stimulus: function () {
+      var html = "";
+      html += "<h1>TASK 1</h1>";
+      html += "<p class = 'justify'>In the following task, ";
+      html += "you will be presented with a series of images. ";
+      html += "Your task is simply to <b>look carefully at these images</b>. ";
+      html += "The task will be automatically paced</p>";
+      return html;
+    }
+  };
+
+
+
+
+  /* DEMO */
+  var age = {
+    timeline: [{
+      type: 'survey-text',
+      questions: [{ prompt: "What is your age :", rows: 1, columns: 10 }],
+      button_label: "continue",
+    }],
+    loop_function: function (data) {
+      var age = data.values()[0].responses;
+      var age = JSON.parse(age).Q0;
+      if (age == "") {
+        alert("Please indicate your age before continuing");
+        return true;
+      }
+    },
+    on_load: function () {
+      $(".jspsych-content").css("max-width", "90%");
+    },
+    on_finish: function (data) {
+      jsPsych.data.addProperties({
+        age: JSON.parse(data.responses)["Q0"],
+      });
+    },
+  };
+
+  var genderOptions = ['Male', 'Female', 'Other'];
+  var gender = {
+    type: 'survey-multi-choice',
+    questions: [{ prompt: "Please indicate your gender:", options: genderOptions, required: true }],
+    button_label: "continue",
+    on_finish: function (data) {
+      jsPsych.data.addProperties({
+        gender: JSON.parse(data.responses)["Q0"],
+      });
+    },
+  };
+
+
+  /* DEBRIEF */
+  var debrief = "";
+  debrief += "<h1>Fin de l'expérience</h1>";
+  debrief += "<p class='justify'>";
+  debrief += "Merci pour votre participation! Cette étude avait pour but d'étudier la perception générale ";
+  debrief += "qu'ont les individus de visages inconnus et ambigus.</br></br> "
+  debrief += "Veuillez copier le code suivant sur Foule Factory pour valider votre participation :</p>";
+  debrief += '<span style="color:#cc3300; font-weight: bold">PAZ1P9L4</span>';
+
+  /* TIMELINES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+  timeline.push(activeFullscreen);
+  timeline.push(pairingInst);
+  timeline.push(evacond);
+  timeline.push(recogtask);
+  timeline.push(age);
+  timeline.push(gender);
+
+  preloadimages = _.flattenDeep(preloadimages);
+  timeline = _.flattenDeep(timeline);
+
+  /* INITIALISE EXP  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+  jsPsych.init({
+    timeline: timeline,
+    preload_images: preloadimages,
+    max_load_time: 300 * 1000,
+    exclusions: {
+      min_width: 800,
+      min_height: 650,
+    },
+    on_finish: function (data) {
+      $("#jspsych-content").html("<img src='img/loading.gif'>");
+
+      /* Initialize Firebase */
+      var config = {
+        apiKey: "AIzaSyD4r9uWI4icto61fm2tC9neKdEiOUWzMJ8",
+        databaseURL: "https://biatw-68fe6.firebaseio.com/"
+      };
+
+      firebase.initializeApp(config);
+      var database = firebase.database();
+
+      // if no id provided, generate a new id
+      if (id == null) { id = jsPsych.randomization.randomID(15) };
+
+      /* jsPsych: add data to every trial */
+      jsPsych.data.addProperties({
+        id: id,
+        groupColor: groupColor,
+        USCSpairing: USCSpairing,
+        totalTime: jsPsych.totalTime()
+      });
+
+      var dataEC = data.filter({ task: 'evaCond' }).csv();
+      var dataCSratings = data.filter({ task: 'CSratings' }).csv();
+
+      /* Send data to Firebase */
+      database
+        .ref(FBdirectory + "/" + id + "/")
+        .update({ dataEC })
+        .then(function () {
+          database
+            .ref(FBdirectory + "/" + id + "/")
+            .update({ dataCSratings })
+            .then(function () {
+              console.log("Data sent!");
+              $("#jspsych-content").html(debrief);
+              setTimeout(jsPsych.data.displayData, 5000);
+            });
+        });
+    }
+  });
+</script>
+
+</html>

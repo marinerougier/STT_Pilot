@@ -1,0 +1,743 @@
+<!-- TO DO -->
+<!-- Preload images -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>exp</title>
+  <script src="jspsych-6.0.3/jspsych.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-fullscreen.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-html-keyboard-response.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-html-button-response.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-html-slider-response.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-survey-likert.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-survey-text.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-survey-multi-choice.js"></script>
+  <script src="jsPsych-6.0.3/plugins/jspsych-external-html.js"></script>
+  <script src="js/jquery.min.js"></script>
+  <script src="js/lodash.min.js"></script>
+  <script src="js/firebase.js"></script>
+  <link href="jspsych-6.0.3/css/jspsych.css" rel="stylesheet" type="text/css">
+  <style>
+    body {
+      cursor: default;
+    }
+
+    .jspsych-content-wrapper {
+      width: 900px;
+      height: 1500px;
+    }
+
+    .paringsImgsLeft,
+    .paringsImgsRight {
+      height: 200px;
+      margin: 0px;
+    }
+
+    .paringsImgsTop{
+      height: 150px;
+      margin: 0px;
+    }
+
+    .paringsImgsLeft {
+      margin-right: 10px;
+    }
+  </style>
+</head>
+
+<body></body>
+
+<script>
+  /* Parameters */
+  var delayIti = 100;  // 100; inter-trial-interval for trials
+  var delayTrial = 2000; // 2000; duration of each trial
+  var numOfUS = 1; // 12; number of US to be paired with each CS
+  var redirectToLink = "https://google.com"; // link to be redirected to at the end of the experiment
+  var FBdirectory = "EC" // Firebase directory in which to store the data
+
+  /* Initial variables */
+  var timeline = [];
+  var preloadimages = [];
+  var stims = [];
+  var id = jsPsych.data.getURLVariable("id");
+  id = id == null ? id : jsPsych.randomization.randomID(15); // assign random id if not provided in URL
+
+  /* Material */
+   var Relation = [
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/match.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    'relation/mismatch.jpeg',
+    ];
+
+  var Faces = [
+    // male faces
+    'Faces/Jonathan_DArden_13_oval.jpg',
+    'Faces/Google_1_Todd Zambrano_3_oval.jpg',
+    'Faces/Google_1_Sean Shores_5_oval.jpg',
+    'Faces/Google_1_Luis Weber_17-oval.jpg',
+    'Faces/Google_1_Lawrence Holman_9_oval.jpg',
+    'Faces/Google_1_Kevin Northrup_9_oval.jpg',
+    'Faces/Google_1_June Nester_1_oval.jpg',
+    'Faces/Google_1_June Boehm_13_oval.jpg',
+    'Faces/Google_1_Joe Bristol_19_oval.jpg',
+    'Faces/Google_1_Jeanne Brian_1_oval.jpg',
+    'Faces/Google_1_Janice Eichhorn_3_oval.jpg',
+    'Faces/Google_1_Harry Bumgardner_1_oval.jpg',
+    'Faces/Google_1_Gertrude Hinojosa_15_oval.jpg',
+    'Faces/Google_1_Eric Strickland_9_oval.jpg',
+    'Faces/Google_1_Debra Manion_15_oval.jpg',
+    'Faces/Google_1_Debra Jankowski_17_oval.jpg',
+    'Faces/Google_1_Curtis Wegner_16_oval.jpg',
+    'Faces/Google_1_Charles Sampson_5_oval (2).jpg',
+    // female faces
+    'Faces/Google_1_April Seaton_5_oval.jpg',
+    'Faces/Google_1_Arthur Featherstone_1_oval.jpg',
+    'Faces/Google_1_Delores Creed_19_oval.jpg',
+    'Faces/Google_1_Eileen Hackworth_17_oval.jpg',
+    'Faces/Google_1_Ethel Mcardle_5_oval.jpg',
+    'Faces/Google_1_Felicia Rakes_7_oval.jpg',
+    'Faces/Google_1_Geneva Cline_11_oval.jpg',
+    'Faces/Google_1_Heidi Houghton_5_oval.jpg',
+    'Faces/Google_1_Jeffrey Churchwell_13_oval.jpg',
+    'Faces/Google_1_Laura Hines_7_oval.jpg',
+    'Faces/Google_1_Lynda Stamm_15_oval.jpg',
+    'Faces/Google_1_Roxanne Sales_13_oval.jpg',
+    'Faces/Google_1_Samuel Mansour_16_oval.jpg',
+    'Faces/Google_1_Susan Conant_5_oval.jpg',
+    'Faces/Google_1_Theresa Greenlee_7_oval.jpg',
+    'Faces/Google_1_Wendy Gates_3_oval.jpg',
+    'Faces/Juan_Edmiston_11_oval.jpg',
+    'Faces/wilma-1_oval.jpg',
+  ];
+
+  var Faces_gender = [
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "male",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+    "female",
+  ];
+
+// 36 behavioral statements (24 trait-implying and 12 filler)
+// 36 faces with 18 female and 18 male 
+// --> 18 statements with gender = male and 18 with gender = female
+
+  // Sentences
+  // trait-implying sentences
+var Trait_sentences_males = [
+    // trait-implying sentences
+    'Stim_sentences_males/Stim_sentences_males.001.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.002.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.003.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.004.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.005.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.006.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.007.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.008.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.009.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.010.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.011.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.012.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.013.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.014.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.015.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.016.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.017.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.018.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.019.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.020.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.021.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.022.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.023.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.024.jpeg',
+    // filler sentences
+    'Stim_sentences_males/Stim_sentences_males.025.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.026.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.027.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.028.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.029.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.030.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.031.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.032.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.033.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.034.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.035.jpeg',
+    'Stim_sentences_males/Stim_sentences_males.036.jpeg',
+]
+
+var Trait_sentences_females = [
+    // trait-implying sentences
+    'Stim_sentences_females/Stim_sentences_females.001.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.002.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.003.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.004.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.005.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.006.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.007.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.008.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.009.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.010.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.011.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.012.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.013.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.014.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.015.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.016.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.017.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.018.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.019.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.020.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.021.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.022.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.023.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.024.jpeg',
+    // filler sentences
+    'Stim_sentences_females/Stim_sentences_females.025.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.026.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.027.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.028.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.029.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.030.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.031.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.032.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.033.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.034.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.035.jpeg',
+    'Stim_sentences_females/Stim_sentences_females.036.jpeg',
+]
+
+var Traits = [
+    // trait-implying sentences
+    "curious",
+    "cautious",
+    "lazy",
+    "emotional",
+    "insecure",
+    "nosy",
+    "funny",
+    "smart",
+    "selfish",
+    "modest",
+    "honest",
+    "fair",
+    "neat",
+    "creative",
+    "generous",
+    "clumsy",
+    "considerate",
+    "religious",
+    "impolite",
+    "shy",
+    "irresponsible",
+    "ambitious",
+    "calm",
+    "forgetful",
+    // Filler sentences
+    "competent",
+    "loved",
+    "competitive",
+    "offended",
+    "naive",
+    "proud",
+    "confident",
+    "passive",
+    "lost",
+    "inappropriate",
+    "disciplined",
+    "chaste",
+]
+
+
+var TypeSentence = [
+    // trait-implying sentences
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    "TraitImp",
+    // filler sentences
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+    "Filler",
+]
+
+  preloadimages.push(Faces, Trait_sentences_males, Trait_sentences_females, Relation);
+
+  /* Functions */
+  // duplicate elements of an array n times
+  // see https://stackoverflow.com/questions/56330349/how-to-duplicate-elements-in-a-js-array-without-creating-dependent-elements?
+  function duplicateElements(elementsArray, times) {
+    var newArray = [];
+    for (let index = 0; index < elementsArray.length; index++) {
+      var currentElement = elementsArray[index];
+      var currentType = typeof currentElement
+      for (let index = 0; index < times; index++) {
+        if (currentType !== "object" && currentType) {
+          newArray.push(currentElement)
+        } else if (currentType === "object" && currentType) {
+          newArray.push({ ...currentElement })
+        }
+      }
+    }
+    return newArray;
+  }
+
+
+  /* RANDOMIZATION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+  /* PAIRING PROCEDURE */
+ 
+ // putting all the information together in the "stim" object
+  //Faces = Faces.map(function(e) {return {Faces: "<img class='paringsImgsLeft' src='" + e + "'>"}});
+  Faces.map(function (e) { stims.push({Faces: "<img class='paringsImgsLeft' src='" + e + "'>"}) });
+  //stims = duplicateElements(stims, numOfUS);
+  stims.map(function (e, i) { e.Faces_gender = Faces_gender[i] });
+  stims = _.shuffle(stims); // randomize order 
+
+  stims.map(function (e, i) { e.Trait_sentences_males = "<img class='paringsImgsRight' src='" + Trait_sentences_males[i] + "'>"});
+  stims.map(function (e, i) { e.Trait_sentences_females = "<img class='paringsImgsRight' src='" + Trait_sentences_females[i] + "'>"});
+  stims.map(function (e, i) { e.Traits = Traits[i] });
+  stims.map(function (e, i) { e.TypeSentence = TypeSentence[i] });
+  stims = _.shuffle(stims); // randomize order 
+
+  stims.map(function (e, i) { e.Relation = "<img class='paringsImgsTop' src='" + Relation[i] + "'>"});
+  stims = _.shuffle(stims); // randomize order 
+
+  /* EXPERIMENT ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+  /* FULL SCREEN MODE */
+  var activeFullscreen = {
+    message: "",
+    button_label: "To start the study, please switch to fullscreen",
+    type: 'fullscreen',
+    fullscreen_mode: true,
+    delay_after: 200,
+  };
+
+  // Consent
+var check_consent = function(elem) {
+  if (document.getElementById('info').checked 
+    & document.getElementById('volunt').checked 
+    & document.getElementById('anony').checked 
+    & document.getElementById('end').checked 
+    & document.getElementById('consqc').checked 
+    & document.getElementById('summ').checked 
+    & document.getElementById('participate').checked ) {
+    return true;
+  }
+  else {
+    alert("If you wish to participate, you must check all the boxes.");
+    return false;
+  }
+  return false;
+};
+
+var consent = {
+  type:'external-html',
+  url: "https://marinerougier.github.io/Halo_Perso/external_page_consent.html",
+  cont_btn: "start",
+  check_fn: check_consent
+};
+
+  /* General INSTRUCTIONS */
+
+  var Quit_expe = {
+    type: "html-keyboard-response",
+    post_trial_gap: 300,
+    choices: [32],
+    stimulus: function() {
+      var html = "";
+      html += "<h1>Before starting...</h1>";
+      html += "<p class='justify'>You can quit the study at any time by closing the browser window. However, please be aware ";
+      html += "that this will <b>end your participation</b>. If you are certain that you want to quit or encounter technical issues ";
+      html += "that force you to quit, <b>you can still receive a partial reward proportionate to the time you actually spent</b> on ";
+      html += "the study. If this occurs, please take the following steps: Return the study via the Prolific study page as ";
+      html += "quickly as possible (please do not submit unless you have completed the study and received a completion code). ";
+      html += "Send a message to the researcher via the Prolific study page, stating that you completed part of the study ";
+      html += "(this will ensure that the researcher knows you should receive a partial reward). </br></br> ";
+      html += "<p></br>Press <span class='light-keys'><kbd>space</kbd></span> to continue</p>";
+      return html;
+    },
+  };
+
+  var Instr_gene0 = {
+    type: "html-keyboard-response",
+    post_trial_gap: 300,
+    choices: [32],
+    stimulus: function() {
+      var html = "";
+      html += "<h1>Study on person perception</h1>";
+      html += "<p class='justify'>In this task, you will see pictures of different persons. <b>Each person will be displayed together ";
+      html += "with the behavioral description of an acquaintance (that is, a behavior that was made by an acquaintance of the photographed person).</b><br><br>";
+      html += "The behavioral description <b>comes from longer statements </b>that the person on the picture has provided in response ";
+      html += "to questions from an interviewer. <br><br>";
+      html += "Importantly, <b>some of the behavioral descriptions will be correctly matched with the persons who provided them</b> (i.e., the person on the photograph indeed made the statement ";
+      html += "displayed on the screen) whereas <b>other behavioral descriptions will be mismatched </b>(i.e., the statement was made by another ";
+      html += "photograph person). Whether the behavioral description is correctly matched or mismatched will be indicated on the screen by the words ";
+      html += "<b>'MATCH' or 'MISMATCH'. </b><br><br>";
+      html += "<p></br>Press <span class='light-keys'><kbd>space</kbd></span> to continue</p>";
+      return html;
+    },
+};
+
+  var Instr_gene1 = {
+    type: "html-keyboard-response",
+    post_trial_gap: 300,
+    choices: [32],
+    stimulus: function() {
+      var html = "";
+      html += "<h1>Study on person perception</h1>";
+      html += "<p class='justify'>Your task is to <b>look carefully at all the information provided on the screen </b>(the photographed person, the behavioral ";
+      html += "description, and the match/mismatch information) and to <b>indicate to what extent you think the behavioral description ";
+      html += "can be used to judge the person on the screen on a given personality trait. </b><br><br>";
+      html += "It is very important that you answer honestly, based on what you truly think. <br><br> ";
+      html += "<p></br>Press <span class='light-keys'><kbd>space</kbd></span> to continue</p>";
+      return html;
+    },
+};
+
+ /* Pairings */
+var scaleDiagnosicity = ["0</br>Totally irrelevant", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10</br>Totally relevant"];
+
+var evacond = {
+    timeline_variables: stims,
+    randomize_order: true,
+    timeline: [{
+      type: 'survey-likert',
+      preamble: function () {
+        if (jsPsych.timelineVariable('Faces_gender', true) == "male") {
+          var leftImg = jsPsych.timelineVariable('Faces', true);
+          var RelationImg = jsPsych.timelineVariable('Relation', true);
+          var target_trait = jsPsych.timelineVariable('Traits', true);
+          var rightImg = jsPsych.timelineVariable('Trait_sentences_females', true);
+        } else {
+          var leftImg = jsPsych.timelineVariable('Faces', true);
+          var RelationImg = jsPsych.timelineVariable('Relation', true);
+          var target_trait = jsPsych.timelineVariable('Traits', true);
+          var rightImg = jsPsych.timelineVariable('Trait_sentences_males', true);
+        };
+        html = '';
+        html += RelationImg+"<br>";
+        html += leftImg ;
+        html += rightImg ;
+        html += "<br><br>To what extent do you think the behavioral information about an acquaintance is relevant<br>to consider that the photographed person is <b>" + target_trait +"</b>? ";
+        return html;
+      },
+      questions: [
+          {prompt: "", labels: scaleDiagnosicity, required: true},
+        ],
+      on_finish: function (data) {
+        $('.jspsych-content').css({ "max-width": "90%" });
+        data.task = "evaCond";
+        data.Faces = jsPsych.timelineVariable('Faces', true);
+        data.SentFemale = jsPsych.timelineVariable('Trait_sentences_females', true);
+        data.SentMale = jsPsych.timelineVariable('Trait_sentences_males', true);
+        data.Traits = jsPsych.timelineVariable('Traits', true);
+        data.FacesGender = jsPsych.timelineVariable('Faces_gender', true);
+        var parsed_response  = JSON.parse(data.responses);
+        data.diagnosticity    = parsed_response.Q0;
+      },
+    }]
+  };
+
+  /* Exploratory questions */
+  var demand_awareness = {
+        timeline: [{
+            type: 'survey-text',
+            questions: [{ prompt: 'What do you think the researchers were trying to achieve in this study?', rows: 3, columns: 60 }],
+            button_label: "continue",
+        }],
+        loop_function: function (data) {
+            var res = data.values()[0].responses;
+            var res = JSON.parse(res).Q0;
+            if (res == "") {
+                alert("Please answer the question");
+                return true;
+            }
+        },
+        on_finish: function (data) {
+            jsPsych.data.addProperties({
+                demand_awareness: JSON.parse(data.responses).Q0,
+            });
+        },
+    };
+
+  var influence_relation_awareness = {
+      type: 'survey-multi-choice',
+      questions: [{prompt: "Do you think that the match/mismatch information influenced your judgments on the relevance of the behavioral information to judge the photographed person?", options: ['Yes', 'No', 'I do not know'], required: true}],
+      button_label: "Continue",
+      on_load: function() {
+          window.scrollTo(0, 0);
+          $(".jspsych-content").css("margin-top", "200px");
+          $(".jspsych-content").css("max-width", "90%");
+        },
+      on_finish: function(data) {
+          jsPsych.data.addProperties({
+              influence_rel: JSON.parse(data.responses)["Q0"],
+          });
+      },
+  };
+
+  var influence_behavior_awareness = {
+      type: 'survey-multi-choice',
+      questions: [{prompt: "In general, when the match was correct (i.e., the person on the picture indeed formulated the statement), do you think that the behavioral statement was informative of the photographed person's personality?", options: ['Yes', 'No', 'I do not know'], required: true}],
+      button_label: "Continue",
+      on_load: function() {
+          window.scrollTo(0, 0);
+          $(".jspsych-content").css("margin-top", "200px");
+          $(".jspsych-content").css("max-width", "90%");
+        },
+      on_finish: function(data) {
+          jsPsych.data.addProperties({
+              influence_rel: JSON.parse(data.responses)["Q0"],
+          });
+      },
+  };
+
+  var influence_behavior_specific = {
+    timeline: [{
+      type: 'survey-text',
+      questions: [{ prompt: "Please explain how the behavioral statement is informative of the photographed person's personality:", rows: 3, columns: 60 }],
+      button_label: "continue",
+    }],
+    loop_function: function (data) {
+      var age = data.values()[0].responses;
+      var age = JSON.parse(age).Q0;
+      if (age == "") {
+        alert("Please answer the question!");
+        return true;
+      }
+    },
+    on_load: function () {
+      $(".jspsych-content").css("max-width", "90%");
+    },
+    on_finish: function (data) {
+      jsPsych.data.addProperties({
+        influence_behavior_specific: JSON.parse(data.responses)["Q0"],
+      });
+    },
+  };
+
+  /* DEMO */
+  var age = {
+    timeline: [{
+      type: 'survey-text',
+      questions: [{ prompt: "Please indicate your age:", rows: 1, columns: 10 }],
+      button_label: "continue",
+    }],
+    loop_function: function (data) {
+      var age = data.values()[0].responses;
+      var age = JSON.parse(age).Q0;
+      if (age == "") {
+        alert("Please indicate your age!");
+        return true;
+      }
+    },
+    on_load: function () {
+      $(".jspsych-content").css("max-width", "90%");
+    },
+    on_finish: function (data) {
+      jsPsych.data.addProperties({
+        age: JSON.parse(data.responses)["Q0"],
+      });
+    },
+  };
+
+  var genderOptions = ['Male', 'Female', 'Other'];
+  var gender = {
+    type: 'survey-multi-choice',
+    questions: [{ prompt: "Please indicate your gender:", options: genderOptions, required: true }],
+    button_label: "continue",
+    on_finish: function (data) {
+      jsPsych.data.addProperties({
+        gender: JSON.parse(data.responses)["Q0"],
+      });
+    },
+  };
+
+
+  /* DEBRIEF */
+  var debrief = "";
+  debrief += "<h1>Fin de l'expérience</h1>";
+  debrief += "<p class='justify'>";
+  debrief += "Merci pour votre participation! Cette étude avait pour but d'étudier la perception générale ";
+  debrief += "qu'ont les individus de visages inconnus et ambigus.</br></br> "
+  debrief += "Veuillez copier le code suivant sur Foule Factory pour valider votre participation :</p>";
+  debrief += '<span style="color:#cc3300; font-weight: bold">PAZ1P9L4</span>';
+
+  /* TIMELINES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+  //timeline.push(activeFullscreen,
+  //              consent,
+  //              Quit_expe);
+
+
+
+  timeline.push(//Instr_gene0,
+                //Instr_gene1,
+                //evacond,
+                influence_behavior_awareness,
+                {
+                  timeline: [influence_behavior_specific],
+                  conditional_function: function(){
+                      // get the data from the previous trial,
+                      // and check which answer was given
+                      var data = jsPsych.data.get().last(1).values()[0];
+                      if(jsPsych.pluginAPI.compareKeys(data.responses, "Yes")){
+                          return true;
+                      } else {
+                          return false;
+                      }
+                  }
+                },
+                age,
+                gender);
+
+  preloadimages = _.flattenDeep(preloadimages);
+  timeline = _.flattenDeep(timeline);
+
+  /* INITIALISE EXP  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+  jsPsych.init({
+    timeline: timeline,
+    preload_images: preloadimages,
+    max_load_time: 300 * 1000,
+    exclusions: {
+      min_width: 800,
+      min_height: 650,
+    },
+    on_finish: function (data) {
+      $("#jspsych-content").html("<img src='img/loading.gif'>");
+
+      /* Initialize Firebase */
+      var config = {
+        apiKey: "AIzaSyD4r9uWI4icto61fm2tC9neKdEiOUWzMJ8",
+        databaseURL: "https://biatw-68fe6.firebaseio.com/"
+      };
+
+      firebase.initializeApp(config);
+      var database = firebase.database();
+
+      // if no id provided, generate a new id
+      if (id == null) { id = jsPsych.randomization.randomID(15) };
+
+      /* jsPsych: add data to every trial */
+      jsPsych.data.addProperties({
+        id: id,
+        groupColor: groupColor,
+        USCSpairing: USCSpairing,
+        totalTime: jsPsych.totalTime()
+      });
+
+      var dataEC = data.filter({ task: 'evaCond' }).csv();
+      var dataCSratings = data.filter({ task: 'CSratings' }).csv();
+
+      /* Send data to Firebase */
+      database
+        .ref(FBdirectory + "/" + id + "/")
+        .update({ dataEC })
+        .then(function () {
+          database
+            .ref(FBdirectory + "/" + id + "/")
+            .update({ dataCSratings })
+            .then(function () {
+              console.log("Data sent!");
+              $("#jspsych-content").html(debrief);
+              setTimeout(jsPsych.data.displayData, 5000);
+            });
+        });
+    }
+  });
+</script>
+
+</html>
