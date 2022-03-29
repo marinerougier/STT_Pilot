@@ -772,12 +772,19 @@ var languageOptions = ['Native speaker', 'Very well', 'Well', 'Average', 'Badly'
 
   /* DEBRIEF */
   var debrief = "";
-  debrief += "<h1>Fin de l'expérience</h1>";
-  debrief += "<p class='justify'>";
-  debrief += "Merci pour votre participation! Cette étude avait pour but d'étudier la perception générale ";
-  debrief += "qu'ont les individus de visages inconnus et ambigus.</br></br> "
-  debrief += "Veuillez copier le code suivant sur Foule Factory pour valider votre participation :</p>";
-  debrief += '<span style="color:#cc3300; font-weight: bold">PAZ1P9L4</span>';
+  debrief += "<h1>End of the study</h1>";
+  debrief += "<p class='justify'>Thank you for participating in this online study!<br><br> ";
+  debrief += "The goal of this study was to assess how people infer personality traits (e.g., 'lazy') to individuals ";
+  debrief += "on the basis of what these individuals report about another person's behavior (e.g., 'he stayed in bed all day'). ";
+  debrief += "Specifically, we would like to understand the reasoning people have when they do so. ";
+  debrief += "Again, your responses will be anonymous and will be analyzed as part of a group of responses.</br></br> ";
+  debrief += "We hope this explanation was clear. If you want additional information, if you have any questions, or if you would like ";
+  debrief += "to withdraw consent and have your data excluded, do not hesitate to contact us via Prolific Academic. If you are "; 
+  debrief += "interested, you can also ask for the results of this experiment—be aware, however, that this could take several weeks "; 
+  debrief += "to gather all the data we need and to analyze them. <br><br>";
+  debrief += "You can copy this code on Prolific: <b>1848E97F</b> ";
+  debrief += "or you can click on the following link to validate your participation:</p>";
+  debrief += "<a href='https://app.prolific.co/submissions/complete?cc=1848E97F' target='_blank'>click here</a>";
 
   /* TIMELINES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
   timeline.push(activeFullscreen,
@@ -873,7 +880,7 @@ var languageOptions = ['Native speaker', 'Very well', 'Well', 'Average', 'Badly'
         .then(function () {
           console.log("Data sent!");
           $("#jspsych-content").html(debrief);
-          setTimeout(jsPsych.data.displayData, 5000);
+          setTimeout(jsPsych.data.displayData, 15000);
       });
     }
   });
