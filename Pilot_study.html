@@ -659,11 +659,10 @@ var scale_explo = ["0</br>Not at all", "1", "2", "3", "4", "5", "6", "7", "8", "
 
     var Explo_questionnaire = {
         type: 'survey-likert',
-        preamble: "Here is a series of statements about you (see below). Please read each statement and report <br>"+
-                  "your opinion using the scale from 0 (not at all) to 10 (totally).<br><br><br>",
+        preamble: "",
         questions: [
-          {prompt: "<b>In case of correct match, to what extent do you think that the person shown on the picture and the acquaintance this person described are alike (e.g., have similar personalities)?</b>", labels: scale_explo, required: true},
-          {prompt: "<b>In case of correct match, to what extent do you think that the person on the picture talked about a behavior that he or she agreed with?</b>", labels: scale_explo, required: true}
+          {prompt: "In case of correct match, to what extent do you think that the person shown on the picture and the acquaintance this person described are alike (e.g., have similar personalities)? Please use the scale below to answer.", labels: scale_explo, required: true},
+          {prompt: "<br>In case of correct match, to what extent do you think that the person on the picture talked about a behavior that he or she agreed with? Please use the scale below to answer.", labels: scale_explo, required: true}
         ],
         randomize_question_order: false,
         button_label: 'Continue',
@@ -844,12 +843,12 @@ var languageOptions = ['Native speaker', 'Very well', 'Well', 'Average', 'Badly'
       min_height: 650,
     },
     on_finish: function (data) {
-      $("#jspsych-content").html("<img src='img/loading.gif'>");
+      $("#jspsych-content").html("<img src='https://i.gifer.com/4V0b.gif'>");
 
       /* Initialize Firebase */
       var config = {
-        apiKey: "AIzaSyD4r9uWI4icto61fm2tC9neKdEiOUWzMJ8",
-        databaseURL: "https://biatw-68fe6.firebaseio.com/"
+        apiKey: "AIzaSyBwDr8n-RNCbBOk1lKIxw7AFgslXGcnQzM",
+        databaseURL: "https://postdocgent.firebaseio.com/"
       };
 
       firebase.initializeApp(config);
