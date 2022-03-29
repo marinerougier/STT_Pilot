@@ -55,14 +55,18 @@
   var delayTrial = 2000; // 2000; duration of each trial
   var numOfUS = 1; // 12; number of US to be paired with each CS
   var redirectToLink = "https://google.com"; // link to be redirected to at the end of the experiment
-  var FBdirectory = "EC" // Firebase directory in which to store the data
+  var FBdirectory = "STT_Pilot" // Firebase directory in which to store the data
 
   /* Initial variables */
   var timeline = [];
   var preloadimages = [];
   var stims = [];
+  
   var id = jsPsych.data.getURLVariable("id");
   id = id == null ? id : jsPsych.randomization.randomID(15); // assign random id if not provided in URL
+  
+  var prolificID = jsPsych.data.getURLVariable("PROLIFIC_PID");
+  if(prolificID == null) {prolificID = "999";}
 
   /* Material */
    var Relation = [
@@ -491,7 +495,7 @@ var consent = {
  /* Pairings */
 var scaleDiagnosicity = ["0</br>Totally irrelevant", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10</br>Totally relevant"];
 
-var evacond = {
+var behav_rel = {
     timeline_variables: stims,
     randomize_order: true,
     timeline: [{
@@ -520,7 +524,7 @@ var evacond = {
         ],
       on_finish: function (data) {
         $('.jspsych-content').css({ "max-width": "90%" });
-        data.task = "evaCond";
+        data.task = "behav_rel";
         data.Faces = jsPsych.timelineVariable('Faces', true);
         data.SentFemale = jsPsych.timelineVariable('Trait_sentences_females', true);
         data.SentMale = jsPsych.timelineVariable('Trait_sentences_males', true);
@@ -554,6 +558,22 @@ var evacond = {
         },
     };
 
+   var demand_compliance = {
+      type: 'survey-multi-choice',
+      questions: [{prompt: "When we asked you to evaluate the relevance of the behavioral information to judge the photographed person, did you tell us the truth about what you think? Or did you just fake your response (i.e., tell us what you thought we wanted to hear)? Please be honest here (it will not affect payment in any way).", options: ['Yes - I faked my response based on what I thought the researchers wanted to find', 'No - my responses were based on how I genuinely felt', 'I do not know'], required: true}],
+      button_label: "Continue",
+      on_load: function() {
+          window.scrollTo(0, 0);
+          $(".jspsych-content").css("margin-top", "200px");
+          $(".jspsych-content").css("max-width", "90%");
+        },
+      on_finish: function(data) {
+          jsPsych.data.addProperties({
+              demand_compliance: JSON.parse(data.responses)["Q0"],
+          });
+      },
+  };
+
   var influence_relation_awareness = {
       type: 'survey-multi-choice',
       questions: [{prompt: "Do you think that the match/mismatch information influenced your judgments on the relevance of the behavioral information to judge the photographed person?", options: ['Yes', 'No', 'I do not know'], required: true}],
@@ -565,9 +585,33 @@ var evacond = {
         },
       on_finish: function(data) {
           jsPsych.data.addProperties({
-              influence_rel: JSON.parse(data.responses)["Q0"],
+              influence_relation_awareness: JSON.parse(data.responses)["Q0"],
           });
       },
+  };
+
+    var influence_relation_specific = {
+    timeline: [{
+      type: 'survey-text',
+      questions: [{ prompt: "Please explain <b>in what ways</b> the match/mismatch information influenced your judgments on the relevance of the behavioral information to judge the photographed person:", rows: 3, columns: 60 }],
+      button_label: "continue",
+    }],
+    loop_function: function (data) {
+      var influence_rel_specific = data.values()[0].responses;
+      var influence_rel_specific = JSON.parse(influence_rel_specific).Q0;
+      if (influence_rel_specific == "") {
+        alert("Please answer the question!");
+        return true;
+      }
+    },
+    on_load: function () {
+      $(".jspsych-content").css("max-width", "90%");
+    },
+    on_finish: function (data) {
+      jsPsych.data.addProperties({
+        influence_relation_specific: JSON.parse(data.responses)["Q0"],
+      });
+    },
   };
 
   var influence_behavior_awareness = {
@@ -581,7 +625,7 @@ var evacond = {
         },
       on_finish: function(data) {
           jsPsych.data.addProperties({
-              influence_rel: JSON.parse(data.responses)["Q0"],
+              influence_behavior_awareness: JSON.parse(data.responses)["Q0"],
           });
       },
   };
@@ -589,13 +633,13 @@ var evacond = {
   var influence_behavior_specific = {
     timeline: [{
       type: 'survey-text',
-      questions: [{ prompt: "Please explain how the behavioral statement is informative of the photographed person's personality:", rows: 3, columns: 60 }],
+      questions: [{ prompt: "Please explain <b>in what ways</b> the behavioral statement is informative of the photographed person's personality:", rows: 3, columns: 60 }],
       button_label: "continue",
     }],
     loop_function: function (data) {
-      var age = data.values()[0].responses;
-      var age = JSON.parse(age).Q0;
-      if (age == "") {
+      var influence_behavior_specific = data.values()[0].responses;
+      var influence_behavior_specific = JSON.parse(influence_behavior_specific).Q0;
+      if (influence_behavior_specific == "") {
         alert("Please answer the question!");
         return true;
       }
@@ -609,6 +653,39 @@ var evacond = {
       });
     },
   };
+
+// HEXACO-PI 60
+var scale_explo = ["0</br>Not at all", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10</br>Totally"];
+
+    var Explo_questionnaire = {
+        type: 'survey-likert',
+        preamble: "Here is a series of statements about you (see below). Please read each statement and report <br>"+
+                  "your opinion using the scale from 0 (not at all) to 10 (totally).<br><br><br>",
+        questions: [
+          {prompt: "<b>In case of correct match, to what extent do you think that the person shown on the picture and the acquaintance this person described are alike (e.g., have similar personalities)?</b>", labels: scale_explo, required: true},
+          {prompt: "<b>In case of correct match, to what extent do you think that the person on the picture talked about a behavior that he or she agreed with?</b>", labels: scale_explo, required: true}
+        ],
+        randomize_question_order: false,
+        button_label: 'Continue',
+        on_load: function() {
+          window.scrollTo(0, 0);
+          $(".jspsych-content").css("max-width", "100%");
+          $(".jspsych-content").css("margin-top", "200px");
+          $(".jspsych-survey-likert-statement").css("margin", "0px");
+          $(".jspsych-survey-likert-statement").css("padding", "0px");
+          $(".jspsych-survey-likert-opts").css("padding", "0 0 10px");
+          $("#jspsych-survey-likert-next").css("margin-top", "10px");
+          $("#jspsych-survey-likert-form").css("width", "800px");
+          $("li").css("width", "9%");
+        },
+        on_finish: function(data) {
+          var parsed_response  = JSON.parse(data.responses);
+          data.alike            = parsed_response.Q0;
+          data.agreed     = parsed_response.Q1
+        },
+    };
+
+
 
   /* DEMO */
   var age = {
@@ -647,6 +724,52 @@ var evacond = {
     },
   };
 
+var languageOptions = ['Native speaker', 'Very well', 'Well', 'Average', 'Badly', 'Very badly'];
+  var language = {
+        type: 'survey-multi-choice',
+        questions: [{ prompt: "How well do you speak english?", options: languageOptions, required: true }],
+        button_label: "continue",
+        on_finish: function (data) {
+            jsPsych.data.addProperties({
+                language: JSON.parse(data.responses).Q0,
+            });
+            console.log(data);
+        },
+    };
+
+  var Prolific_reported = {
+        timeline: [{
+            type: 'survey-text',
+            questions: [{ prompt: 'Please indicate your Prolific ID:', rows: 3, columns: 60 }],
+            button_label: "continue",
+        }],
+        loop_function: function (data) {
+            var res = data.values()[0].responses;
+            var res = JSON.parse(res).Q0;
+            if (res == "") {
+                alert("Please answer the question");
+                return true;
+            }
+        },
+        on_finish: function (data) {
+            jsPsych.data.addProperties({
+                Prolific_reported: JSON.parse(data.responses).Q0,
+            });
+        },
+    };
+
+  var comments = {
+        timeline: [{
+            type: 'survey-text',
+            questions: [{ prompt: 'Do you have comments regarding this study? [Optional]', rows: 3, columns: 60 }],
+            button_label: "continue",
+        }],
+        on_finish: function (data) {
+            jsPsych.data.addProperties({
+                Comment: JSON.parse(data.responses).Q0,
+            });
+        },
+    };
 
   /* DEBRIEF */
   var debrief = "";
@@ -658,31 +781,55 @@ var evacond = {
   debrief += '<span style="color:#cc3300; font-weight: bold">PAZ1P9L4</span>';
 
   /* TIMELINES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-  //timeline.push(activeFullscreen,
-  //              consent,
-  //              Quit_expe);
+  timeline.push(activeFullscreen,
+                consent,
+                Quit_expe);
 
 
 
-  timeline.push(//Instr_gene0,
-                //Instr_gene1,
-                //evacond,
+  timeline.push(Instr_gene0,
+                Instr_gene1,
+                behav_rel,
+                demand_awareness,
+                demand_compliance,
+                influence_relation_awareness,
+				{
+                  timeline: [influence_relation_specific],
+                  conditional_function: function(){
+                      // get the data from the previous trial,
+                      // and push the question only if 'yes' response
+                      var res1 = jsPsych.data.get().last(1).values()[0].responses;
+                      res1 = JSON.parse(res1).Q0;
+                      console.log(res1);
+                      if(res1 === "Yes"){
+                          return true;
+                      } else {
+                          return false;
+                      }
+                  }
+				},
                 influence_behavior_awareness,
                 {
                   timeline: [influence_behavior_specific],
                   conditional_function: function(){
                       // get the data from the previous trial,
-                      // and check which answer was given
-                      var data = jsPsych.data.get().last(1).values()[0];
-                      if(jsPsych.pluginAPI.compareKeys(data.responses, "Yes")){
+                      // and push the question only if 'yes' response
+                      var res2 = jsPsych.data.get().last(1).values()[0].responses;
+                      res2 = JSON.parse(res2).Q0;
+                      console.log(res2);
+                      if(res2 === "Yes"){
                           return true;
                       } else {
                           return false;
                       }
                   }
                 },
+                Explo_questionnaire,
                 age,
-                gender);
+                gender,
+                language,
+                Prolific_reported,
+                comments);
 
   preloadimages = _.flattenDeep(preloadimages);
   timeline = _.flattenDeep(timeline);
@@ -714,28 +861,21 @@ var evacond = {
       /* jsPsych: add data to every trial */
       jsPsych.data.addProperties({
         id: id,
-        groupColor: groupColor,
-        USCSpairing: USCSpairing,
+        prolificID: prolificID,
         totalTime: jsPsych.totalTime()
       });
 
-      var dataEC = data.filter({ task: 'evaCond' }).csv();
-      var dataCSratings = data.filter({ task: 'CSratings' }).csv();
+      var data_behav_rel = data.filter({ task: 'behav_rel' }).csv();
 
       /* Send data to Firebase */
       database
         .ref(FBdirectory + "/" + id + "/")
-        .update({ dataEC })
+        .update({ data_behav_rel })
         .then(function () {
-          database
-            .ref(FBdirectory + "/" + id + "/")
-            .update({ dataCSratings })
-            .then(function () {
-              console.log("Data sent!");
-              $("#jspsych-content").html(debrief);
-              setTimeout(jsPsych.data.displayData, 5000);
-            });
-        });
+          console.log("Data sent!");
+          $("#jspsych-content").html(debrief);
+          setTimeout(jsPsych.data.displayData, 5000);
+      });
     }
   });
 </script>
