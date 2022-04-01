@@ -466,14 +466,11 @@ var consent = {
     stimulus: function() {
       var html = "";
       html += "<h1>Study on person perception</h1>";
-      html += "<p class='justify'>In this task, you will see pictures of different persons. <b>Each person will be displayed together ";
-      html += "with the behavioral description of an acquaintance (that is, a behavior that was made by an acquaintance).</b><br><br>";
-      html += "The behavioral description <b>comes from longer statements </b>that the person on the picture has provided in response ";
-      html += "to questions from an interviewer. <br><br>";
-      html += "Importantly, <b>some of the behavioral descriptions will be correctly matched with the persons who provided them</b> (i.e., the person on the photograph indeed made the statement ";
-      html += "displayed on the screen) whereas <b>other behavioral descriptions will be mismatched </b>(i.e., the statement was not made by the ";
-      html += "person on the photograph but by another person). Whether the behavioral description is correctly matched or mismatched will be indicated on the screen by the words ";
-      html += "<b>'MATCH' or 'MISMATCH'. </b><br><br>";
+      html += "<p class='justify'>Before the study, we asked a number of people to describe the behavior of somebody they know (i.e., an acquaintance). During the study, on each trial, you will see a <b>photograph of a person and the description of a behavior. </b><br><br>";
+      html += "On some trials, you will also see the word <b>'MATCH'</b>. In this case, <b>the behavioral description is about an acquaintance of the person ";
+      html += "on the photograph.</b> It means that the person on the photograph described his/her acquaintance in that way. On other trials, ";
+      html += "you will see the word <b>'MISMATCH'</b>. In that case, <b>the behavioral description was not provided by the person on the photograph ";
+      html += "but by one of the other persons who was asked to describe an acquaintance. </b><br><br>";
       html += "<p></br>Press <span class='light-keys'><kbd>space</kbd></span> to continue</p>";
       return html;
     },
@@ -488,8 +485,10 @@ var consent = {
       html += "<h1>Study on person perception</h1>";
       html += "<p class='justify'>Here is an example of trial: <br>";
       html += "<center><img src = 'relation/Example_instr.jpeg'></center><br>"
-      html += "<p class='justify'>The match/mismatch information is displayed on the top. The photographed person is presented below, together with ";
-      html += "the behavioral description of the acquaintance. <br><br>";
+      html += "<p class='justify'>The match/mismatch information is displayed at the top. The photographed person is presented below on the left, together with ";
+      html += "the behavioral description below on the right. <br><br>";
+      html += "'MATCH' means that the behavioral description was provided by the person on the photograph about an acquaintance of that ";
+      html += "person. 'MISMATCH' means that the behavior description was not provided by the person on the photograph but by somebody else. <br><br>"
       html += "<p></br>Press <span class='light-keys'><kbd>space</kbd></span> to continue</p>";
       return html;
     },
@@ -512,7 +511,7 @@ var consent = {
 };
 
  /* Pairings */
-var scaleDiagnosicity = ["0</br>Not useful at all", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10</br>Totally useful"];
+var scaleDiagnosicity = ["0</br>Not useful at all", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10</br>Very useful"];
 
 var behav_rel = {
     timeline_variables: stims,
