@@ -698,8 +698,8 @@ var scale_explo = ["0</br>Not at all", "1", "2", "3", "4", "5", "6", "7", "8", "
         },
         on_finish: function(data) {
           var parsed_response  = JSON.parse(data.responses);
-          data.alike            = parsed_response.Q0;
-          data.agreed     = parsed_response.Q1
+          alike: JSON.parse(data.responses).Q0,
+          agreed: JSON.parse(data.responses).Q1,
         },
     };
 
