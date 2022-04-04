@@ -548,6 +548,7 @@ var behav_rel = {
         data.SentMale = jsPsych.timelineVariable('Trait_sentences_males', true);
         data.Traits = jsPsych.timelineVariable('Traits', true);
         data.FacesGender = jsPsych.timelineVariable('Faces_gender', true);
+        data.relation = jsPsych.timelineVariable('Relation', true);
         var parsed_response  = JSON.parse(data.responses);
         data.diagnosticity    = parsed_response.Q0;
       },
