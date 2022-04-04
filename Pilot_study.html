@@ -697,9 +697,10 @@ var scale_explo = ["0</br>Not at all", "1", "2", "3", "4", "5", "6", "7", "8", "
           $("li").css("width", "9%");
         },
         on_finish: function(data) {
-          var parsed_response  = JSON.parse(data.responses);
+          jsPsych.data.addProperties({
           alike: JSON.parse(data.responses).Q0,
           agreed: JSON.parse(data.responses).Q1,
+          });
         },
     };
 
